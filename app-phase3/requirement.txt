@@ -8,3 +8,4 @@ category-encoders
 shap
 matplotlib
 scipy
+sklearn
