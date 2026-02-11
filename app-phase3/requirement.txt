@@ -1,11 +1,9 @@
-streamlit
-pandas
+streamlit 
+pandas 
 numpy
 scikit-learn
-xgboost
-lightgbm
-category-encoders
+xgboost 
+lightgbm 
 shap
-matplotlib
-scipy
-sklearn
+matplotlib 
+seaborn
