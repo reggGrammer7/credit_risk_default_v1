@@ -9,9 +9,9 @@ from xgboost import XGBClassifier
 from lightgbm import LGBMClassifier
 from sklearn.metrics import (
     roc_auc_score, confusion_matrix, precision_score,
-    recall_score, f1_score, ConfusionMatrixDisplay,
-    calibration_curve
+    recall_score, f1_score, ConfusionMatrixDisplay
 )
+from sklearn.calibration import calibration_curve
 import shap
 import matplotlib.pyplot as plt
 import joblib
