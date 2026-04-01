@@ -102,7 +102,8 @@ def compute_woe(df, feature, target):
     return grouped['WOE'].to_dict()
 
 def apply_woe_map(series, woe_map, default_woe=0.0):
-    return series.map(woe_map).fillna(default_woe).astype(float)
+    mapped = pd.Series(series.map(woe_map), index=series.index, dtype="float64")
+    return mapped.fillna(default_woe)
 
 woe_maps = {}
 for col in X_train_binned.columns:
