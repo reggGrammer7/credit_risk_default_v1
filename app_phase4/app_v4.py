@@ -16,6 +16,7 @@ import shap
 import matplotlib.pyplot as plt
 import joblib
 import os
+from pandas.api.types import is_numeric_dtype, is_categorical_dtype
 
 st.set_page_config(page_title="Enhanced Credit Risk App", layout="wide")
 
@@ -37,10 +38,14 @@ df = load_data()
 # ------------------------------
 def handle_missing(df):
     for col in df.columns:
-        if df[col].dtype == "object":
+        if is_numeric_dtype(df[col]):
+            df[col] = df[col].fillna(df[col].median())
+        elif is_categorical_dtype(df[col]):
+            if "Missing" not in df[col].cat.categories:
+                df[col] = df[col].cat.add_categories(["Missing"])
             df[col] = df[col].fillna("Missing")
         else:
-            df[col] = df[col].fillna(df[col].median())
+            df[col] = df[col].fillna("Missing")
     return df
 
 df = handle_missing(df)
