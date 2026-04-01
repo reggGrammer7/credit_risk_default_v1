@@ -68,15 +68,24 @@ X_train, X_test, y_train, y_test = train_test_split(
 # ------------------------------
 # Binning Numeric Variables
 # ------------------------------
-def bin_numeric(X, cols, bins=5):
-    X_binned = X.copy()
+def bin_numeric_train_test(X_train, X_test, cols, bins=5):
+    X_train_binned = X_train.copy()
+    X_test_binned = X_test.copy()
+
     for col in cols:
-        X_binned[col] = pd.qcut(X[col], bins, duplicates='drop')
-    return X_binned
+        _, bin_edges = pd.qcut(X_train[col], q=bins, retbins=True, duplicates="drop")
+        bin_edges = np.unique(bin_edges)
+
+        if len(bin_edges) <= 2:
+            continue
+
+        X_train_binned[col] = pd.cut(X_train[col], bins=bin_edges, include_lowest=True)
+        X_test_binned[col] = pd.cut(X_test[col], bins=bin_edges, include_lowest=True)
+
+    return X_train_binned, X_test_binned
 
 numeric_cols = X.select_dtypes(include=np.number).columns.tolist()
-X_train_binned = bin_numeric(X_train, numeric_cols)
-X_test_binned = bin_numeric(X_test, numeric_cols)
+X_train_binned, X_test_binned = bin_numeric_train_test(X_train, X_test, numeric_cols)
 
 # ------------------------------
 # WOE Transformation
@@ -92,11 +101,17 @@ def compute_woe(df, feature, target):
     grouped['WOE'] = np.log((grouped['dist_good'] + 1e-6) / (grouped['dist_bad'] + 1e-6))
     return grouped['WOE'].to_dict()
 
+def apply_woe_map(series, woe_map, default_woe=0.0):
+    return series.map(woe_map).fillna(default_woe).astype(float)
+
 woe_maps = {}
 for col in X_train_binned.columns:
     woe_maps[col] = compute_woe(pd.concat([X_train_binned[[col]], y_train], axis=1), col, "Default")
-    X_train[col] = X_train_binned[col].map(woe_maps[col])
-    X_test[col] = X_test_binned[col].map(woe_maps[col])
+    X_train[col] = apply_woe_map(X_train_binned[col], woe_maps[col])
+    X_test[col] = apply_woe_map(X_test_binned[col], woe_maps[col])
+
+X_train = X_train.apply(pd.to_numeric, errors="coerce").fillna(0.0)
+X_test = X_test.apply(pd.to_numeric, errors="coerce").fillna(0.0)
 
 # ------------------------------
 # Model with GridSearchCV
