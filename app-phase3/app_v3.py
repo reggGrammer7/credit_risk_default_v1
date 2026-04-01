@@ -230,7 +230,7 @@ psi_val = psi(y_train, y_pred_proba)
 # ------------------------------
 if show_baseline:
     if model_choice == "Logistic Regression (WOE)":
-        baseline_model = LogisticRegression(max_iter=1000)
+        baseline_model = LogisticRegression(max_iter=1000,class_weight="balanced")
         X_train_base = X_train[baseline_woe_features]
         X_test_base = X_test[baseline_woe_features]
     elif model_choice == "XGBoost":
