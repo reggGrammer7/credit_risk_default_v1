@@ -28,7 +28,7 @@ def load_data():
     credit = fetch_openml(data_id=31, as_frame=True)
     df = credit.frame.copy()
     df.rename(columns={"class": "Default"}, inplace=True)
-    df["Default"] = df["Default"].map({"bad": 1, "good": 0})
+    df["Default"] = df["Default"].map({"bad": 1, "good": 0}).astype("int64")
     return df
 
 df = load_data()
@@ -82,7 +82,9 @@ X_test_binned = bin_numeric(X_test, numeric_cols)
 # WOE Transformation
 # ------------------------------
 def compute_woe(df, feature, target):
-    grouped = df.groupby(feature)[target].agg(['count', 'sum'])
+    woe_df = df[[feature, target]].copy()
+    woe_df[target] = pd.to_numeric(woe_df[target], errors="coerce").fillna(0).astype("int64")
+    grouped = woe_df.groupby(feature, observed=False)[target].agg(['count', 'sum'])
     grouped.columns = ['total', 'bad']
     grouped['good'] = grouped['total'] - grouped['bad']
     grouped['dist_good'] = grouped['good'] / grouped['good'].sum()
